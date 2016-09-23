@@ -1,0 +1,17 @@
+{
+  "name": "trippynews",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "echomunge": "^0.2.0",
+    "echomunge-web": "0.0.1",
+    "node-summary": "^1.1.0"
+  }
+}
