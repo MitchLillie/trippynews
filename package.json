@@ -4,14 +4,31 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --compilers js:babel-core/register"
   },
+  "engine": "node 6.6.0",
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cheerio": "^0.22.0",
     "echomunge": "^0.2.0",
     "echomunge-web": "0.0.1",
-    "node-summary": "^1.1.0"
+    "node-summary": "^1.1.0",
+    "request": "^2.75.0"
+  },
+  "standard": {
+    "globals": [
+      "after",
+      "afterEach",
+      "before",
+      "beforeEach",
+      "describe",
+      "it"
+    ]
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.14.0",
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2"
   }
 }

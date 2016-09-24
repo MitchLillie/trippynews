@@ -2,21 +2,21 @@
 
 const request = require('request')
 const cheerio = require('cheerio')
-const echoMungeWeb = require('echomunge-web')
 const EchoMunge = require('echomunge')
 const url = require('url')
 let $list
 let $article
 let db
+process.setMaxListeners(0)
 
-// let source = {
-//   id: 1,
-//   url: 'http://www.nytimes.com/column/trilobites',
-//   li: '.theme-summary',
-//   link: '.story-link',
-//   text: '.story-body-text',
-//   depth: 1
-// }
+let source = {
+  id: 1,
+  url: 'http://www.nytimes.com/column/trilobites',
+  li: '.theme-summary',
+  link: '.story-link',
+  text: '.story-body-text',
+  depth: 1
+}
 
 // let source = {
 //   id: 1,
@@ -27,42 +27,64 @@ let db
 //   depth: 1
 // }
 
-let source = {
-  id: 1,
-  url: 'http://www.upi.com/Odd_News/',
-  li: '.upi_item',
-  title: '',
-  link: 'a',
-  text: '#article',
-  depth: 1
+// let source = {
+//   id: 1,
+//   url: 'http://www.upi.com/Odd_News/',
+//   li: '.upi_item',
+//   title: '',
+//   link: 'a',
+//   text: '#article',
+//   depth: 1
+// }
+
+function scrape (source) {
+  let mungeReady = []
+  let promise = new Promise(function (resolve, reject) {
+    request(source.url, function (err, res, body) {
+      if (err || !body) {
+        reject(err)
+      }
+      console.log("loading body: ", body)
+      $list = cheerio.load(body)
+
+      $list(source.li).each(function (i, e) {
+        let $this = $list(this)
+        let storyLink = $list(source.link, $this).attr('href')
+        storyLink = url.parse(storyLink)
+        if (storyLink.host == null) {
+          storyLink = url.resolve(source.url, storyLink.path)
+        } else {
+          storyLink = storyLink.href
+        }
+        mungeReady.push(munge(source, storyLink))
+      })
+      Promise.all(mungeReady)
+        .then((data) => resolve(data))
+        .catch((e) => reject(e))
+    })
+  })
+  return promise
 }
 
-request(source.url, function (err, res, body) {
-  if (err) {
-    throw new Error(err)
-  }
-  $list = cheerio.load(body)
-
-  $list(source.li).each(function (i, e) {
-    let $this = $list(this)
-    let storyLink = $list(source.link, $this).attr('href')
-    storyLink = url.parse(storyLink)
-    if (storyLink.host == null) {
-      storyLink = url.resolve(source.url, storyLink.path)
-    } else {
-      storyLink = storyLink.href
-    }
-    console.log('storyLink: ', storyLink)
+function munge (source, storyLink) {
+  let promise = new Promise(function (resolve, reject) {
     request(storyLink, function (err, res, body) {
-      if (err) {
-        throw new Error(err)
+      if (err || !body) {
+        reject(err)
       }
+      console.log("loading body: ", body)
       $article = cheerio.load(body)
       db = new EchoMunge()
       db.recordText($article(source.text).not('embed, script').text())
-      console.log('==========')
       let str = db.makeText({ maxLength: 500, terminate: true }) + ' ' + db.makeText({ maxLength: 200, terminate: true }) + ' ' + db.makeText({ maxLength: 600, terminate: true })
-      console.log(str)
+      resolve(str)
     })
   })
-})
+  return promise
+}
+
+if (require.main === module) {
+  scrape(source)
+} else {
+  module.exports.scrape = scrape
+}
