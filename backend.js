@@ -9,14 +9,28 @@ let $article
 let db
 process.setMaxListeners(0)
 
-let source = {
-  id: 1,
-  url: 'http://www.nytimes.com/column/trilobites',
-  li: '.theme-summary',
-  link: '.story-link',
-  text: '.story-body-text',
-  depth: 1
+function hashCode (str) {
+  var hash = 0
+  var i
+  var chr
+  var len
+  if (str.length === 0) return hash
+  for (i = 0, len = str.length; i < len; i++) {
+    chr = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + chr
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
 }
+
+// let source = {
+//   id: 1,
+//   url: 'http://www.nytimes.com/column/trilobites',
+//   li: '.theme-summary',
+//   link: '.story-link',
+//   text: '.story-body-text',
+//   depth: 1
+// }
 
 // let source = {
 //   id: 1,
@@ -27,15 +41,15 @@ let source = {
 //   depth: 1
 // }
 
-// let source = {
-//   id: 1,
-//   url: 'http://www.upi.com/Odd_News/',
-//   li: '.upi_item',
-//   title: '',
-//   link: 'a',
-//   text: '#article',
-//   depth: 1
-// }
+let source = {
+  id: 1,
+  url: 'http://www.upi.com/Odd_News/',
+  li: '.upi_item',
+  title: '',
+  link: 'a',
+  text: '#article',
+  depth: 1
+}
 
 function scrape (source) {
   let mungeReady = []
@@ -44,7 +58,6 @@ function scrape (source) {
       if (err || !body) {
         reject(err)
       }
-      console.log("loading body: ", body)
       $list = cheerio.load(body)
 
       $list(source.li).each(function (i, e) {
@@ -72,12 +85,17 @@ function munge (source, storyLink) {
       if (err || !body) {
         reject(err)
       }
-      console.log("loading body: ", body)
       $article = cheerio.load(body)
+      let articleText = $article(source.text).not('embed, script').text()
+      let articleData = {
+        source_id: source.id,
+        hash: hashCode(articleText.slice(0, 40)),
+        statusCode: res.statusCode
+      }
       db = new EchoMunge()
-      db.recordText($article(source.text).not('embed, script').text())
-      let str = db.makeText({ maxLength: 500, terminate: true }) + ' ' + db.makeText({ maxLength: 200, terminate: true }) + ' ' + db.makeText({ maxLength: 600, terminate: true })
-      resolve(str)
+      db.recordText(articleText)
+      articleData.text = db.makeText({ maxLength: 500, terminate: true }) + ' ' + db.makeText({ maxLength: 200, terminate: true }) + ' ' + db.makeText({ maxLength: 600, terminate: true })
+      resolve(articleData)
     })
   })
   return promise
@@ -86,5 +104,5 @@ function munge (source, storyLink) {
 if (require.main === module) {
   scrape(source)
 } else {
-  module.exports.scrape = scrape
+  module.exports = {scrape, hashCode}
 }

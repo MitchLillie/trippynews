@@ -14,7 +14,8 @@
     "echomunge": "^0.2.0",
     "echomunge-web": "0.0.1",
     "node-summary": "^1.1.0",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+    "underscore": "^1.8.3"
   },
   "standard": {
     "globals": [
