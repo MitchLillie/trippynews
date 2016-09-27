@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import { scrape, hashCode } from '../backend'
-import * as _ from 'underscore'
 process.setMaxListeners(0)
 
 describe('backend', function () {

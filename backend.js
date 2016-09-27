@@ -9,6 +9,7 @@ let $article
 let db
 process.setMaxListeners(0)
 
+
 function hashCode (str) {
   var hash = 0
   var i
