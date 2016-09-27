@@ -38,4 +38,9 @@ describe('backend', function () {
       expect(a).to.equal(b)
     })
   })
+  describe('write', function () {
+    it('connects to the database')
+    it('inserts records into the database')
+    it('removes all test records from the database')
+  })
 })
