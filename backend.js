@@ -9,7 +9,6 @@ let $article
 let db
 process.setMaxListeners(0)
 
-
 function hashCode (str) {
   var hash = 0
   var i
@@ -103,7 +102,9 @@ function munge (source, storyLink) {
 }
 
 if (require.main === module) {
-  scrape(source)
+  scrape(source).then(function (data) {
+    console.log(data)
+  })
 } else {
   module.exports = {scrape, hashCode}
 }
