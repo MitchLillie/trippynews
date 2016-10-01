@@ -18,7 +18,7 @@ describe('database', function () {
     it('rejects on error')
   })
 
-  describe.only('save', function () {
+  describe('save', function () {
     it('saves some articles', function (done) {
       let articles = [
         { source_id: 1,
@@ -33,14 +33,34 @@ describe('database', function () {
         }
       ]
       DB.save(articles).then(function (res) {
-        console.log('res: ', res)
-        rollback(res)
+        expect(res.result.ok).to.equal(1)
+        expect(res.result.n).to.equal(2)
         done()
+      })
+    })
+
+    it('deletes all articles for that source before saving', function (done) {
+      this.timeout(5000)
+      let articles = [
+        { source_id: 1,
+          hash: 1586874354,
+          statusCode: 200,
+          text: 'I fail to scare party guests. The $30. We\'ve reached out to advise the humor in Canada will no longer sell a Halloween decoration depicts a Halloween decoration depicting a window!'
+        },
+        { source_id: 1,
+          hash: 384266668,
+          statusCode: 200,
+          text: 'Pranjal Borkotoky gently waved his game. Pranjal Borkotoky gently waved his golf club at the birds continued to squawk loudly while keeping an eye on the ball. Pranjal Borkotoky shared video of himself swinging at the birds as he wrote?'
+        }
+      ]
+      DB.save(articles).then(function (res) {
+        DB.save(articles).then(function (res) {
+          DB.get(1).then(function (res) {
+            expect(res.length).to.equal(2)
+            done()
+          })
+        })
       })
     })
   })
 })
-
-function rollback (res) {
-  
-}

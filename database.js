@@ -26,14 +26,22 @@ let DB = (function () {
         if (err) throw new Error(err)
 
         let collection = db.collection('articles')
-        if (typeof data[0] !== 'object') {
-          let single = Object.assign({}, data)
-          data = []
-          data.push(single)
-        }
-        collection.insertMany(data, function (err, result) {
+        collection.deleteMany({ source_id: data[0].source_id }, function (err, result) {
           if (err) throw new Error(err)
-          resolve(result)
+          if (typeof data[0] !== 'object') {
+            let single = Object.assign({}, data)
+            data = []
+            data.push(single)
+          }
+          collection.insertMany(data, function (err, result) {
+            if (err) throw new Error(err)
+            resolve(result)
+          })
+        })
+      })
+    })
+    return promise
+  }
 
   db.get = function (id) {
     let promise = new Promise(function (resolve, reject) {
