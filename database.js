@@ -34,6 +34,16 @@ let DB = (function () {
         collection.insertMany(data, function (err, result) {
           if (err) throw new Error(err)
           resolve(result)
+
+  db.get = function (id) {
+    let promise = new Promise(function (resolve, reject) {
+      MongoClient.connect(url, function (err, db) {
+        if (err) throw new Error(err)
+
+        let collection = db.collection('articles')
+        collection.find({source_id: id}).toArray(function (err, docs) {
+          if (err) throw new Error(err)
+          resolve(docs)
         })
       })
     })
