@@ -1,0 +1,12 @@
+svg {
+  font-family: 'UnifrakturCook', cursive;
+}
+
+svg .img-layer {
+  fill: url(#p-img);
+  font-size: 70px;
+}
+
+.articles {
+  padding-top: 140px;
+}

@@ -2,12 +2,14 @@ const express = require('express')
 const browserify = require('browserify-middleware')
 const literalify = require('literalify')
 const React = require('react')
-const {DOM} = React
-const {body, div, script} = DOM
+// const {DOM} = React
+// const {body, div, script} = DOM
 const ReactDOMServer = require('react-dom/server')
 
 const server = express()
-const App = React.createFactory(require('./app'))
+server.use(express.static('public'))
+// const App = React.createFactory(require('./app'))
+const App = require('./app')
 
 server.set('port', process.env.PORT || 3000)
 
@@ -21,77 +23,41 @@ server.get('/', function (req, res) {
   // imagine this would be objects typically fetched async from a DB,
   // filesystem or API, depending on the logged-in user, etc.
   var props = {
-    items: [
-      'Item 0',
-      'Item 1',
-      'Item </script>',
-      'Item <!--inject!-->'
+    arts: [
+      { source_id: 1,
+        hash: 1586874354,
+        statusCode: 200,
+        src: 'https://www.quantamagazine.org/wp-content/uploads/2016/09/Dragonfly.jpg',
+        date: 'Tue Mar 4, 2016',
+        text: 'I fail to scare party guests. The $30. We\'ve reached out to advise the humor in Canada will no longer sell a Halloween decoration depicts a Halloween decoration depicting a window!'
+      }
     ]
   }
 
   // Here we're using React to render the outer body, so we just use the
   // simpler renderToStaticMarkup function, but you could use any templating
   // language (or just a string) for the outer page template
-  var html = ReactDOMServer.renderToStaticMarkup(
-    <body>
-
-      {/*
-      The actual server-side rendering of our component occurs here, and we
-      pass our data in as `props`. This div is the same one that the client
-      will "render" into on the browser from browser.js
-      */}
-      <div id='content' dangerouslySetInnerHTML={createContent(props)}></div>
-
-      {/*
-      The props should match on the client and server, so we stringify them
-      on the page to be available for access by the code run in browser.js
-      You could use any var name here as long as it's unique
-      */}
-      <script dangerouslySetInnerHTML={passProps(props)}></script>
-
-      {/*
-      We'll load React from a CDN - you don't have to do this,
-      you can bundle it up or serve it locally if you like
-      */}
-
-      <script src='//cdnjs.cloudflare.com/ajax/libs/react/15.3.0/react.min.js'></script>
-      <script src='//cdnjs.cloudflare.com/ajax/libs/react/15.3.0/react-dom.min.js'></script>
-
-      {/*
-      Then the browser will fetch and run the browserified bundle consisting
-      of browser.js and all its dependencies.
-      We serve this from the endpoint a few lines down.
-      */}
-
-      <script src='/bundle.js'></script>
-    </body>
+  var html = ReactDOMServer.renderToString(
+    <html>
+      <head>
+        <script src='amazon_assoc.js' />
+        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css' integrity='sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj' crossOrigin='anonymous' />
+        <link rel='stylesheet' href='style.css' />
+        <link href='https://fonts.googleapis.com/css?family=UnifrakturCook:700' rel='stylesheet' />
+        <script src='ga.js' />
+      </head>
+      <body>
+        <App {...props} />
+        <script src='./bundle.js'/>
+      </body>
+    </html>
   )
 
   // Return the page to the browser
   res.send(html)
 })
 
-server.get('/bundle.js', browserify(['react', 'react-dom', {'./browser.js': {run: true}}]))
-
-// server.get('/bundle.js', function (req, res) {
-//   res.setHeader('Content-Type', 'text/javascript')
-//
-//   // Here we invoke browserify to package up browser.js and everything it requires.
-//   // DON'T do it on the fly like this in production - it's very costly -
-//   // either compile the bundle ahead of time, or use some smarter middleware
-//   // (eg browserify-middleware).
-//   // We also use literalify to transform our `require` statements for React
-//   // so that it uses the global variable (from the CDN JS file) instead of
-//   // bundling it up with everything else
-//   browserify()
-//     .add('./browser.js')
-//     .transform(literalify.configure({
-//       'react': 'window.React',
-//       'react-dom': 'window.ReactDOM'
-//     }))
-//     .bundle()
-//     .pipe(res.send)
-// })
+server.get('/bundle.js', browserify(['react', 'react-dom', {'./start_browser.js': {run: true}}]))
 
 server.listen(server.get('port'), () => {
   console.log('Express server listening on port %d in %s mode.', server.get('port'), server.get('env'))
