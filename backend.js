@@ -60,15 +60,17 @@ function scrape (source) {
       $list = cheerio.load(body)
 
       $list(source.li).each(function (i, e) {
-        let $this = $list(this)
-        let storyLink = $list(source.link, $this).attr('href')
-        storyLink = url.parse(storyLink)
-        if (storyLink.host == null) {
-          storyLink = url.resolve(source.url, storyLink.path)
-        } else {
-          storyLink = storyLink.href
+        if (i < 10) {
+          let $this = $list(this)
+          let storyLink = $list(source.link, $this).attr('href')
+          storyLink = url.parse(storyLink)
+          if (storyLink.host == null) {
+            storyLink = url.resolve(source.url, storyLink.path)
+          } else {
+            storyLink = storyLink.href
+          }
+          mungeReady.push(munge(source, storyLink))
         }
-        mungeReady.push(munge(source, storyLink))
       })
       Promise.all(mungeReady)
         .then((data) => resolve(data))
