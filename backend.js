@@ -159,13 +159,14 @@ function makeText (articleText) {
   let textStore = new EchoMunge()
   textStore.recordText(articleText)
   let text = ''
+  let sentence = textStore.makeText({ maxLength: 100, terminate: true })
 
   while (true) {
-    let sentence = textStore.makeText({ maxLength: ((Math.random() * 1000) + 150), terminate: true })
     if (sentence.length > 3 && typeof sentence !== 'undefined') {
       text += (sentence + ' ')
     }
-    if (text.length + (Math.random() * 1000) > 1000) {
+    sentence = textStore.makeText({ maxLength: ((Math.random() * 1000) + 150), terminate: true })
+    if (text.length + (Math.random() * 1000) > 1500) {
       return text
     }
   }
@@ -185,14 +186,16 @@ function parseDate (string, source) {
   return m
 }
 
+let usedTerms = []
 function imageFromText (text) {
   var term = pickWord(text)
-  while (term.length < 3) {
+  while (term.length < 3 && usedTerms.indexOf(term) < 0) {
     term = pickWord(text)
   }
+  usedTerms.push(term)
   return 'https://pixabay.com/api/?key=' + pixabay_api + '&q=' + encodeURI(term) + '&image_type=photo'
 }
 
 function pickWord (text) {
-  return text.replace(/\./g, ``).split(' ')[Math.floor(Math.random() * 10)]
+  return text.replace(/[^\w\s]/g, ``).split(' ')[Math.floor(Math.random() * 10)]
 }
