@@ -10,6 +10,7 @@ const server = express()
 server.use(express.static('public'))
 // const App = React.createFactory(require('./app'))
 const App = require('./app')
+const DB = require('./database')
 
 server.set('port', process.env.PORT || 3000)
 

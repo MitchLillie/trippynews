@@ -26,7 +26,7 @@ let DB = (function () {
         if (err) throw new Error(err)
 
         let collection = db.collection('articles')
-        collection.deleteMany({ source_id: data[0].source_id }, function (err, result) {
+        collection.deleteMany({}, function (err, result) {
           if (err) throw new Error(err)
           if (typeof data[0] !== 'object') {
             let single = Object.assign({}, data)
@@ -47,9 +47,9 @@ let DB = (function () {
     let promise = new Promise(function (resolve, reject) {
       MongoClient.connect(url, function (err, db) {
         if (err) throw new Error(err)
-
         let collection = db.collection('articles')
-        collection.find({source_id: id}).toArray(function (err, docs) {
+        let query = id ? {source_id: id} : {}
+        collection.find(query).toArray(function (err, docs) {
           if (err) throw new Error(err)
           resolve(docs)
         })

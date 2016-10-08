@@ -21,6 +21,7 @@
     "express": "^4.14.0",
     "install": "^0.8.1",
     "literalify": "^0.4.0",
+    "moment": "^2.15.1",
     "mongodb": "^2.2.10",
     "node-summary": "^1.1.0",
     "npm": "^3.10.8",
