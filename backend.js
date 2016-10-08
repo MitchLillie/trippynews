@@ -4,10 +4,36 @@ const request = require('request')
 const cheerio = require('cheerio')
 const EchoMunge = require('echomunge')
 const url = require('url')
+const fs = require('fs')
+const moment = require('moment')
+moment.locale('en')
 let $list
 let $article
-let db
-process.setMaxListeners(0)
+const { pixabay_api } = JSON.parse(fs.readFileSync('secret.json'))
+
+let {sources} = JSON.parse(fs.readFileSync('sources.json'))
+sources = sources.map((e, i) => {
+  e.id = i + 1
+  return e
+})
+
+let source = {
+  id: 1,
+  'url': 'http://www.upi.com/Odd_News/',
+  'li': '.upi_item',
+  'src': '#ph1 img',
+  'backup_src': '.st_text_c img',
+  'dateline_divider': ' -- ',
+  'link': 'a',
+  'text': '#article',
+  'date': '.meta.grey',
+  date_divider: /\|\W+/,
+  date_parser: '--MMM-D--YYYY----h-mm-a'
+}
+
+const DB = require('./database')
+
+// process.setMaxListeners(0)
 
 function hashCode (str) {
   var hash = 0
@@ -21,34 +47,6 @@ function hashCode (str) {
     hash |= 0 // Convert to 32bit integer
   }
   return hash
-}
-
-// let source = {
-//   id: 1,
-//   url: 'http://www.nytimes.com/column/trilobites',
-//   li: '.theme-summary',
-//   link: '.story-link',
-//   text: '.story-body-text',
-//   depth: 1
-// }
-
-// let source = {
-//   id: 1,
-//   url: 'http://abcnews.go.com/Weird',
-//   li: '.ffl_obj',
-//   link: '#h_default a',
-//   text: '.article-copy',
-//   depth: 1
-// }
-
-let source = {
-  id: 1,
-  url: 'http://www.upi.com/Odd_News/',
-  li: '.upi_item',
-  title: '',
-  link: 'a',
-  text: '#article',
-  depth: 1
 }
 
 function scrape (source) {
@@ -87,24 +85,106 @@ function munge (source, storyLink) {
       }
       $article = cheerio.load(body)
       let articleText = $article(source.text).not('embed, script').text()
+      if (source.dateline_divider) {
+        articleText = articleText.split(source.dateline_divider).slice(1).join(source.dateline_divider)
+      }
+      let articleSrc = $article(source.src).attr('src') ? $article(source.src).attr('src') : $article(source.backup_src).attr('src')
       let articleData = {
         source_id: source.id,
-        hash: hashCode(articleText.slice(0, 40)),
-        statusCode: res.statusCode
+        date: parseDate($article(source.date).clone().children().remove().end().text().replace(/[\n\t]/g, ``), source),
+        src: articleSrc,
+        statusCode: res.statusCode,
+        text: makeText(articleText)
       }
-      db = new EchoMunge()
-      db.recordText(articleText)
-      articleData.text = db.makeText({ maxLength: 500, terminate: true }) + ' ' + db.makeText({ maxLength: 200, terminate: true }) + ' ' + db.makeText({ maxLength: 600, terminate: true })
-      resolve(articleData)
+      let imagePromise = new Promise(function (resolve, reject) {
+        if (typeof articleSrc === 'undefined' || !articleSrc) {
+          let url = imageFromText(articleData.text)
+          request(url, function (err, res, body) {
+            if (err || !body) {
+              reject(err)
+            }
+            body = JSON.parse(body)
+            if (body.totalHits > 0) {
+              articleData.src = body.hits[0].webformatURL
+            }
+            resolve()
+          })
+        } else {
+          resolve()
+        }
+      })
+      imagePromise.then(function () {
+        resolve(articleData)
+      })
     })
   })
   return promise
 }
 
 if (require.main === module) {
+  let sourcesReady = []
+  // console.log("sources: ", sources)
+  // sources.forEach(function (source, i) {
+  //   sourcesReady.push(scrape(source))
+  // })
+  // Promise.all(sourcesReady)
+  //   .then(data => {
+  //     DB.save(data).then(num => {
+  //       console.log('added ', num.result.n, 'records')
+  //       process.exit()
+  //     })
+  //     .catch((e) => { throw new Error(e) })
+  //   })
+  //   .catch((e) => { throw new Error(e) })
   scrape(source).then(function (data) {
-    console.log(data)
+    console.log("data: ", data)
+    DB.save(data).then(function (num) {
+      console.log('added ', num.result.n, 'records')
+      process.exit()
+    })
   })
 } else {
-  module.exports = {scrape, hashCode}
+  module.exports = {scrape, hashCode, parseDate}
+}
+
+function makeText (articleText) {
+  let textStore = new EchoMunge()
+  textStore.recordText(articleText)
+  let text = ''
+
+  while (true) {
+    let sentence = textStore.makeText({ maxLength: ((Math.random() * 1000) + 150), terminate: true })
+    if (sentence.length > 3 && typeof sentence !== 'undefined') {
+      text += (sentence + ' ')
+    }
+    if (text.length + (Math.random() * 1000) > 1000) {
+      return text
+    }
+  }
+}
+
+function parseDate (string, source) {
+  // string = "By Ben Hooper  Contact the Author   |  	Oct. 6, 2016 at 9:13 AM"
+  // console.log("string1: ", string)
+  if (source.date_divider) {
+    string = string.slice(string.search(source.date_divider) + 1)
+  }
+  string = string.trim()
+  // string = "  	Oct. 6, 2016 at 9:13 AM"
+  // source.date_parser = "MMM-D--YYYY----h-mm-a"
+  let m = moment(string, source.date_parser).unix()
+  // console.log("m: ", m)
+  return m
+}
+
+function imageFromText (text) {
+  var term = pickWord(text)
+  while (term.length < 3) {
+    term = pickWord(text)
+  }
+  return 'https://pixabay.com/api/?key=' + pixabay_api + '&q=' + encodeURI(term) + '&image_type=photo'
+}
+
+function pickWord (text) {
+  return text.replace(/\./g, ``).split(' ')[Math.floor(Math.random() * 10)]
 }
