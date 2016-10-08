@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { scrape, hashCode } from '../backend'
+import { scrape, hashCode, parseDate } from '../backend'
 process.setMaxListeners(0)
 
 describe('backend', function () {
@@ -30,11 +30,24 @@ describe('backend', function () {
         throw new Error(e)
       })
     })
+
     it('repeatedly calculates a hash code based on the article text', function () {
       var text = 'NINGBO, China, Sept. 23 (UPI) -- Doctors'
       var a = hashCode(text)
       var b = hashCode(text)
       expect(a).to.equal(b)
+    })
+
+    it('calculates a date correctly', function () {
+      var source = {
+        date_divider: /\|\W+/,
+        date_parser: 'MMM-D--YYYY----h-mm-a'
+      }
+      var string = 'By Eric DuVall     |  Oct. 7, 2016 at 1:28 PM'
+      var date = parseDate(string, source)
+      console.log("date.parsingFlags(): ", date.parsingFlags())
+      expect(date).to.be.an.object
+      expect(date.isValid()).to.be.true
     })
   })
 })
