@@ -52,7 +52,8 @@ function hashCode (str) {
 function scrape (source) {
   let mungeReady = []
   let promise = new Promise(function (resolve, reject) {
-    request(source.url, function (err, res, body) {
+    let j = request.jar()
+    request({url: source.url, jar: j}, function (err, res, body) {
       if (err || !body) {
         reject(err)
       }
@@ -79,7 +80,8 @@ function scrape (source) {
 
 function munge (source, storyLink) {
   let promise = new Promise(function (resolve, reject) {
-    request(storyLink, function (err, res, body) {
+    let j = request.jar()
+    request({url: storyLink, jar: j}, function (err, res, body) {
       if (err || !body) {
         reject(err)
       }
