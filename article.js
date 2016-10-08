@@ -12,8 +12,8 @@ module.exports = React.createClass({
             <p>&rsaquo;</p>
           </div>
           <div className='col-md-10'>
-            <h3>{this.props.text.split('.')[0]}</h3>
-            <p>{this.props.text.split('.').slice(1).join('.').slice(1)}</p>
+            <h3>{this.props.text.split(/[.!?]/)[0]}</h3>
+            <p>{this.props.text.split(/[.!?]/).slice(1).join('.').slice(1)}</p>
           </div>
         </div>
         <div className='row'>
