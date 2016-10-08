@@ -23,39 +23,42 @@ server.get('/', function (req, res) {
   // here (with some potentially dangerous values for testing), but you could
   // imagine this would be objects typically fetched async from a DB,
   // filesystem or API, depending on the logged-in user, etc.
-  var props = {
-    arts: [
-      { source_id: 1,
-        hash: 1586874354,
-        statusCode: 200,
-        src: 'https://www.quantamagazine.org/wp-content/uploads/2016/09/Dragonfly.jpg',
-        date: 'Tue Mar 4, 2016',
-        text: 'I fail to scare party guests. The $30. We\'ve reached out to advise the humor in Canada will no longer sell a Halloween decoration depicts a Halloween decoration depicting a window!'
-      }
-    ]
-  }
+  // var props = {
+  //   arts: [
+  //     { source_id: 1,
+  //       hash: 1586874354,
+  //       statusCode: 200,
+  //       src: 'https://www.quantamagazine.org/wp-content/uploads/2016/09/Dragonfly.jpg',
+  //       date: 'Tue Mar 4, 2016',
+  //       text: 'I fail to scare party guests. The $30. We\'ve reached out to advise the humor in Canada will no longer sell a Halloween decoration depicts a Halloween decoration depicting a window!'
+  //     }
+  //   ]
+  // }
+  var props = {}
+  DB.get().then(function (data) {
+    props.arts = data
+    // Here we're using React to render the outer body, so we just use the
+    // simpler renderToStaticMarkup function, but you could use any templating
+    // language (or just a string) for the outer page template
+    var html = ReactDOMServer.renderToString(
+      <html>
+        <head>
+          <script src='amazon_assoc.js' />
+          <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css' integrity='sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj' crossOrigin='anonymous' />
+          <link rel='stylesheet' href='style.css' />
+          <link href='https://fonts.googleapis.com/css?family=UnifrakturCook:700' rel='stylesheet' />
+          <script src='ga.js' />
+        </head>
+        <body>
+          <App {...props} />
+          <script src='./bundle.js'/>
+        </body>
+      </html>
+    )
 
-  // Here we're using React to render the outer body, so we just use the
-  // simpler renderToStaticMarkup function, but you could use any templating
-  // language (or just a string) for the outer page template
-  var html = ReactDOMServer.renderToString(
-    <html>
-      <head>
-        <script src='amazon_assoc.js' />
-        <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css' integrity='sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj' crossOrigin='anonymous' />
-        <link rel='stylesheet' href='style.css' />
-        <link href='https://fonts.googleapis.com/css?family=UnifrakturCook:700' rel='stylesheet' />
-        <script src='ga.js' />
-      </head>
-      <body>
-        <App {...props} />
-        <script src='./bundle.js'/>
-      </body>
-    </html>
-  )
-
-  // Return the page to the browser
-  res.send(html)
+    // Return the page to the browser
+    res.send(html)
+  })
 })
 
 server.get('/bundle.js', browserify(['react', 'react-dom', {'./start_browser.js': {run: true}}]))
