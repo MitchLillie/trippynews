@@ -26,15 +26,39 @@
     },
     {
       "backup_src": "",
-      "date": "",
-      "date_divider": "",
-      "date_parser": "",
+      "date": ".article-meta .timestamp",
+      "date_divider": "—",
+      "date_parser": "MMM-D-YYYY-h-mm-a---",
       "dateline_divider": "",
       "li": ".ffl_obj",
       "link": "#h_default a",
       "src": "",
       "text": ".article-copy",
       "url": "http://abcnews.go.com/Weird"
+    },
+    {
+      "backup_src": "",
+      "date": ".date",
+      "date_divider": "",
+      "date_parser": "MMMM-D-YYYY",
+      "dateline_divider": "",
+      "li": ".categoryItemListed",
+      "link": ".categoryThumb a",
+      "src": ".size-full",
+      "text": ".entry-content.txt_content p",
+      "url": "https://www.quantamagazine.org/archive/"
+    },
+    {
+      "backup_src": ".clone img",
+      "date": "#info-section .left span:nth-child(3)",
+      "date_divider": "",
+      "date_parser": "MMMM-D-YYYY",
+      "dateline_divider": "",
+      "li": ".view-mit-news li",
+      "link": "a",
+      "src": ".slide-wrapper .image img",
+      "text": ".field-items p",
+      "url": "https://news.mit.edu/mit-news"
     }
   ]
 }
