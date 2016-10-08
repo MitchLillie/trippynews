@@ -1,4 +1,5 @@
 var React = require('react')
+var moment = require('moment')
 var Article = require('./article')
 
 // This is just a simple example of a component that can be rendered on both
@@ -23,7 +24,11 @@ module.exports = React.createClass({
   // Note that we allow the button to be disabled initially, and then enable it
   // when everything has loaded
   render: function () {
-    let articles = this.props.arts.map((article, i) => {
+    let articles = this.props.arts.sort(function (a, b) {
+      return b.date - a.date
+    }).map((article, i) => {
+      let date = article.date * 1000
+      article.date = moment(date).format('MMM Do, YYYY')
       return <Article {...article} key={i + 1} />
     })
     return (
