@@ -45,7 +45,6 @@ describe('backend', function () {
       }
       var string = 'By Eric DuVall     |  Oct. 7, 2016 at 1:28 PM'
       var date = parseDate(string, source)
-      console.log("date.parsingFlags(): ", date.parsingFlags())
       expect(date).to.be.an.object
       expect(date.isValid()).to.be.true
     })

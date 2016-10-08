@@ -1,0 +1,40 @@
+{
+  "sources": [
+    {
+      "backup_src": ".st_text_c img",
+      "date": ".meta.grey",
+      "date_divider": "\\|\\W+",
+      "date_parser": "--MMM-D--YYYY----h-mm-a",
+      "dateline_divider": " -- ",
+      "li": ".upi_item",
+      "link": "a",
+      "src": "#ph1 img",
+      "text": "#article",
+      "url": "http://www.upi.com/Odd_News/"
+    },
+    {
+      "backup_src": ".interactive-graphic .image img",
+      "date": ".byline .dateline",
+      "date_divider": "",
+      "date_parser": "MMM-D-YYYY",
+      "dateline_divider": "",
+      "li": ".theme-summary",
+      "link": ".story-link",
+      "src": "img.media-viewer-candidate",
+      "text": ".story-body-text",
+      "url": "http://www.nytimes.com/column/trilobites"
+    },
+    {
+      "backup_src": "",
+      "date": "",
+      "date_divider": "",
+      "date_parser": "",
+      "dateline_divider": "",
+      "li": ".ffl_obj",
+      "link": "#h_default a",
+      "src": "",
+      "text": ".article-copy",
+      "url": "http://abcnews.go.com/Weird"
+    }
+  ]
+}
