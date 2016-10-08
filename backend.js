@@ -97,15 +97,18 @@ function munge (source, storyLink) {
         source_id: source.id,
         date: parseDate($article(source.date).clone().children().remove().end().text().replace(/[\n\t]/g, ``), source),
         src: articleSrc,
+        href: storyLink,
         statusCode: res.statusCode,
         text: makeText(articleText)
       }
       let imagePromise = new Promise(function (resolve, reject) {
         if (typeof articleSrc === 'undefined' || !articleSrc) {
           let url = imageFromText(articleData.text)
+          console.log("url: ", url)
           request(url, function (err, res, body) {
             if (err || !body) {
-              reject(err)
+              // don't care
+              resolve()
             }
             body = JSON.parse(body)
             if (body.totalHits > 0) {
@@ -127,26 +130,27 @@ function munge (source, storyLink) {
 
 if (require.main === module) {
   let sourcesReady = []
-  // console.log("sources: ", sources)
-  // sources.forEach(function (source, i) {
-  //   sourcesReady.push(scrape(source))
-  // })
-  // Promise.all(sourcesReady)
-  //   .then(data => {
-  //     DB.save(data).then(num => {
-  //       console.log('added ', num.result.n, 'records')
-  //       process.exit()
-  //     })
-  //     .catch((e) => { throw new Error(e) })
-  //   })
-  //   .catch((e) => { throw new Error(e) })
-  scrape(source).then(function (data) {
-    console.log("data: ", data)
-    DB.save(data).then(function (num) {
-      console.log('added ', num.result.n, 'records')
-      process.exit()
-    })
+  sources.forEach(function (source, i) {
+    sourcesReady.push(scrape(source))
   })
+  Promise.all(sourcesReady)
+    .then(data => {
+      data = [].concat.apply([], data)
+      DB.save(data).then(num => {
+        console.log('added ', num.result.n, 'records')
+        process.exit()
+      })
+      .catch((e) => { throw new Error(e) })
+    })
+    .catch((e) => { throw new Error(e) })
+  //
+  // scrape(source).then(function (data) {
+  //   // console.log("data: ", data)
+  //   DB.save(data).then(function (num) {
+  //     console.log('added ', num.result.n, 'records')
+  //     process.exit()
+  //   }).catch((e) => { throw new Error(e) })
+  // }).catch((e) => { throw new Error(e) })
 } else {
   module.exports = {scrape, hashCode, parseDate}
 }
